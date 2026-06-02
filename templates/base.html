@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title or "Personal Action Assistant" }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 32px;
+            background: #f5f7fa;
+            color: #1f2937;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        nav a {
+            margin-right: 16px;
+            color: #0f4c81;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #e5edf7;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .badge-created {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .badge-processed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-review {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        pre {
+            background: #111827;
+            color: #e5e7eb;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .actions a {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Персональный помощник «от текста до действия»</h1>
+    <nav>
+        <a href="/ui/new">Начало работы</a>
+        <a href="/ui/texts">Витрина</a>
+        <a href="/ui/review">Требует проверки</a>
+        <a href="/ui/tasks">Задачи на контроле</a>
+        <a href="/export/texts.json">Экспорт JSON</a>
+        <a href="/export/texts.csv">Экспорт CSV</a>
+        <a href="/docs">API Docs</a>
+    </nav>
+</header>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

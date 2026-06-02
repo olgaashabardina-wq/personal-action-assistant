@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Записи, требующие проверки</h2>
+
+<div class="card">
+    <p>Здесь показаны записи, по которым система выставила <strong>needs_review=true</strong>.</p>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Исходный текст</th>
+        <th>Причина проверки</th>
+        <th>Создано</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in texts %}
+    <tr>
+        <td>{{ item.id }}</td>
+        <td>{{ item.source_text }}</td>
+        <td>
+            <span class="badge badge-review">Требует проверки</span>
+            <br>
+            {{ item.review_reason or "Причина не указана" }}
+        </td>
+        <td>{{ item.created_at }}</td>
+        <td>
+            <a href="/ui/texts/{{ item.id }}">Открыть карточку</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

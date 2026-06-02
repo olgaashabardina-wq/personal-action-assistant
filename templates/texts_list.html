@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Витрина записей</h2>
+
+<div class="card">
+    <p>На этом экране отображаются все исходные тексты, их статус обработки и признак ручной проверки.</p>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Исходный текст</th>
+        <th>Статус</th>
+        <th>Ручная проверка</th>
+        <th>Причина</th>
+        <th>Создано</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in texts %}
+    <tr>
+        <td>{{ item.id }}</td>
+        <td>{{ item.source_text }}</td>
+        <td>
+            {% if item.status == "needs_review" %}
+                <span class="badge badge-review">Требует проверки</span>
+            {% elif item.status == "processed" %}
+                <span class="badge badge-processed">Принято в работу</span>
+            {% elif item.status == "error" %}
+                <span class="badge badge-error">Ошибка</span>
+            {% else %}
+                <span class="badge badge-created">Создано</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if item.needs_review %}
+                <span class="badge badge-review">Да</span>
+            {% else %}
+                Нет
+            {% endif %}
+        </td>
+        <td>{{ item.review_reason or "—" }}</td>
+        <td>{{ item.created_at }}</td>
+        <td class="actions">
+            <a href="/ui/texts/{{ item.id }}">Открыть карточку</a>            
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

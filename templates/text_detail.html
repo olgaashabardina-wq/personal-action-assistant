@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Карточка записи #{{ text.id }}</h2>
+
+<div class="card">
+    <h3>Исходный текст</h3>
+    <p>{{ text.source_text }}</p>
+
+    <p><strong>Статус:</strong>
+        {% if text.status == "needs_review" %}
+            <span class="badge badge-review">Требует проверки</span>
+        {% elif text.status == "processed" %}
+            <span class="badge badge-processed">Принято в работу</span>
+        {% elif text.status == "error" %}
+            <span class="badge badge-error">Ошибка</span>
+        {% else %}
+            <span class="badge badge-created">Создано</span>
+        {% endif %}
+    </p>
+
+    <p><strong>Причина ручной проверки:</strong> {{ text.review_reason or "—" }}</p>
+    <form
+    method="post"
+    action="/ui/texts/{{ text.id }}/analyze"
+    onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').innerText = 'ИИ-анализ выполняется...';"
+>
+    <button
+        type="submit"
+        style="padding: 10px 18px; font-size: 16px; cursor: pointer;"
+    >
+        Запустить ИИ-анализ
+    </button>
+</form>
+
+</div>
+
+<div class="card">
+    <h3>Результат ИИ</h3>
+    {% if ai_result %}
+        <p><strong>Резюме:</strong> {{ ai_result.summary }}</p>
+        <p><strong>Общий приоритет:</strong> {{ ai_result.overall_priority }}</p>
+        <p><strong>Уверенность:</strong> {{ ai_result.confidence }}</p>
+        <p><strong>Требует проверки:</strong> {{ "Да" if ai_result.needs_review else "Нет" }}</p>
+
+        <p><strong>Причины:</strong></p>
+        {% if ai_result.review_reason %}
+            <ul>
+                {% for reason in ai_result.review_reason.split(". ") %}
+                    {% if reason %}
+                        <li>{{ reason }}{% if not reason.endswith(".") %}.{% endif %}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>—</p>
+        {% endif %}
+
+        <details>
+            <summary><strong>Технический JSON результата</strong></summary>
+            <pre>{{ ai_result.raw_json }}</pre>
+        </details>
+    {% else %}
+        <p class="muted">ИИ-обработка ещё не запускалась.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Извлечённые задачи</h3>
+
+    {% if actions %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Задача</th>
+                    <th>Отдел / подразделение</th>
+                    <th>Ответственный</th>
+                    <th>Срок</th>
+                    <th>Приоритет</th>
+                    <th>Статус</th>
+                    <th>Основание из текста</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for action in actions %}
+                    <tr>
+                        <td>
+                            <form
+                                id="action-form-{{ action.id }}"
+                                method="post"
+                                action="/ui/actions/{{ action.id }}/update"
+                            ></form>
+
+                            <textarea
+                                form="action-form-{{ action.id }}"
+                                name="title"
+                                rows="2"
+                                style="width: 100%; resize: vertical;"
+                                required
+                            >{{ action.title }}</textarea>
+                        </td>
+
+                        <td>
+                            <input
+                                form="action-form-{{ action.id }}"
+                                type="text"
+                                name="department"
+                                value="{{ action.department or '' }}"
+                                style="width: 100%;"
+                                placeholder="Не указан"
+                            >
+                        </td>
+
+                        <td>
+                            <input
+                                form="action-form-{{ action.id }}"
+                                type="text"
+                                name="assignee"
+                                value="{{ action.assignee or '' }}"
+                                style="width: 100%;"
+                                placeholder="Не указан"
+                            >
+                        </td>
+
+                        <td>
+                            <input
+                                form="action-form-{{ action.id }}"
+                                type="text"
+                                name="deadline"
+                                value="{{ action.deadline or '' }}"
+                                style="width: 100%;"
+                                placeholder="Не указан"
+                            >
+                        </td>
+
+                        <td>
+                            <select
+                                form="action-form-{{ action.id }}"
+                                name="priority"
+                                style="width: 100%;"
+                            >
+                                <option value="low" {% if action.priority == "low" %}selected{% endif %}>Низкий</option>
+                                <option value="medium" {% if action.priority == "medium" %}selected{% endif %}>Средний</option>
+                                <option value="high" {% if action.priority == "high" %}selected{% endif %}>Высокий</option>
+                                <option value="critical" {% if action.priority == "critical" %}selected{% endif %}>Критичный</option>
+                            </select>
+                        </td>
+
+                        <td>
+                            <select
+                                form="action-form-{{ action.id }}"
+                                name="status"
+                                style="width: 100%;"
+                            >
+                                <option value="new" {% if action.status == "new" %}selected{% endif %}>Новая</option>
+                                <option value="in_progress" {% if action.status == "in_progress" %}selected{% endif %}>В работе</option>
+                                <option value="needs_clarification" {% if action.status == "needs_clarification" %}selected{% endif %}>Требует уточнения</option>
+                                <option value="done" {% if action.status == "done" %}selected{% endif %}>Выполнена</option>
+                            </select>
+                        </td>
+
+                        <td>
+                            {{ action.source_fragment }}
+                        </td>
+
+                        <td>
+                            <button
+                                form="action-form-{{ action.id }}"
+                                type="submit"
+                            >
+                                Подтвердить и поставить на контроль
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="muted">Задачи пока не извлечены.</p>
+    {% endif %}
+</div>
+
+
+<div class="card">
+    <h3>Журнал обработки</h3>
+
+    {% if audits %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Действие</th>
+                    <th>Результат</th>
+                    <th>Ошибка</th>
+                    <th>Время выполнения</th>
+                    <th>Создано</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for audit in audits %}
+                    <tr>
+                        <td>
+                            {% if audit.action == "create_text" %}
+                                Создание записи
+                            {% elif audit.action == "create_text_from_ui" %}
+                                Создание записи через веб-панель
+                            {% elif audit.action == "analyze_text" %}
+                                ИИ-анализ
+                            {% elif audit.action == "update_action_from_ui" %}
+                                Постановка задачи на контроль
+                            {% elif audit.action == "put_action_under_control" %}
+                                Постановка задачи на контроль
+                            {% elif audit.action == "mark_action_done" %}
+                                Задача отмечена выполненной
+                            {% else %}
+                                {{ audit.action }}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if audit.status == "success" %}
+                                Успешно
+                            {% elif audit.status == "needs_review" %}
+                                Требует проверки
+                            {% elif audit.status == "error" %}
+                                Ошибка
+                            {% else %}
+                                {{ audit.status }}
+                            {% endif %}
+                        </td>
+
+                        <td>{{ audit.error or "—" }}</td>
+
+                        <td>
+                            {% if audit.duration_ms is not none %}
+                                {{ audit.duration_ms }} мс
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <td>{{ audit.created_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="muted">Журнал обработки пока пуст.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

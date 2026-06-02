@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Задачи на контроле</h2>
+
+<div class="card">
+    <p>
+        На этом экране отображаются задачи, извлечённые из входящих текстов.
+        Здесь можно контролировать отдел, ответственного, срок и статус исполнения.
+    </p>
+</div>
+
+<div class="card">
+    {% if actions %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Задача</th>
+                    <th>Отдел / подразделение</th>
+                    <th>Ответственный</th>
+                    <th>Срок</th>
+                    <th>Приоритет</th>
+                    <th>Статус контроля</th>
+                    <th>Исходная запись</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for action in actions %}
+                    <tr>
+                        <td>{{ action.id }}</td>
+
+                        <td>{{ action.title }}</td>
+
+                        <td>{{ action.department or "Не указан" }}</td>
+
+                        <td>{{ action.assignee or "Не указан" }}</td>
+
+                        <td>{{ action.deadline or "Не указан" }}</td>
+
+                        <td>
+                            {% if action.priority == "low" %}
+                                Низкий
+                            {% elif action.priority == "medium" %}
+                                Средний
+                            {% elif action.priority == "high" %}
+                                Высокий
+                            {% elif action.priority == "critical" %}
+                                Критичный
+                            {% else %}
+                                {{ action.priority }}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if action.status == "new" %}
+                                Новая
+                            {% elif action.status == "in_progress" %}
+                                В работе
+                            {% elif action.status == "needs_clarification" %}
+                                Требует уточнения
+                            {% elif action.status == "done" %}
+                                Выполнена
+                            {% else %}
+                                {{ action.status }}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a href="/ui/texts/{{ action.input_text_id }}">Открыть</a>
+                        </td>
+
+                        <td>
+                            {% if action.status != "done" %}
+                                <form method="post" action="/ui/actions/{{ action.id }}/done">
+                                    <button type="submit">Отметить выполненной</button>
+                                </form>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="muted">Задач на контроле пока нет.</p>
+    {% endif %}
+</div>
+{% endblock %}
+    
